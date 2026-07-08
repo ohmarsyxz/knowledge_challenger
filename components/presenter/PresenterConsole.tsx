@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { parseMarkdownToSlides } from '../../app/utils/parser';
 import { Slide, ThemeId, Theme, SyncMessage } from '../../app/types';
+import { parseInlineMarkdown } from './SlideRenderer';
 
 const THEMES: Theme[] = [
   { id: 'glass', name: '🔮 Dark Glassmorphism', className: 'theme-glass' },
@@ -122,21 +123,49 @@ export default function PresenterConsole() {
     return elements.map((el, i) => {
       switch (el.type) {
         case 'h1':
-          return <h1 key={i} className="text-2xl font-black mb-2 leading-tight">{el.content}</h1>;
+          return <h1 key={i} className="text-2xl font-black mb-2 leading-tight">{parseInlineMarkdown(el.content)}</h1>;
         case 'h2':
-          return <h2 key={i} className="text-xl font-bold mb-2 opacity-95">{el.content}</h2>;
+          return <h2 key={i} className="text-xl font-bold mb-2 opacity-95">{parseInlineMarkdown(el.content)}</h2>;
         case 'h3':
-          return <h3 key={i} className="text-lg font-bold mb-1 opacity-90">{el.content}</h3>;
+          return <h3 key={i} className="text-lg font-bold mb-1 opacity-90">{parseInlineMarkdown(el.content)}</h3>;
         case 'ul':
           return (
-            <ul key={i} className="space-y-1 text-xs list-disc pl-4 mb-2">
-              {el.items?.map((item, idx) => <li key={idx}>{item}</li>)}
+            <ul key={i} className="space-y-1 text-xs list-none pl-0 mb-2">
+              {el.items?.map((item, idx) => {
+                const leadingSpaces = item.match(/^(\s*)/)?.[1].length || 0;
+                const cleanItem = item.trim();
+                return (
+                  <li
+                    key={idx}
+                    className="flex items-start gap-2 select-text"
+                    style={{ paddingLeft: `${leadingSpaces * 8}px` }}
+                  >
+                    <span className="mt-1.5 w-1 h-1 rounded-full shrink-0 bg-slate-500" />
+                    <span>{parseInlineMarkdown(cleanItem)}</span>
+                  </li>
+                );
+              })}
             </ul>
           );
         case 'ol':
           return (
-            <ol key={i} className="space-y-1 text-xs list-decimal pl-4 mb-2">
-              {el.items?.map((item, idx) => <li key={idx}>{item}</li>)}
+            <ol key={i} className="space-y-1 text-xs list-none pl-0 mb-2">
+              {el.items?.map((item, idx) => {
+                const leadingSpaces = item.match(/^(\s*)/)?.[1].length || 0;
+                const cleanItem = item.trim();
+                return (
+                  <li
+                    key={idx}
+                    className="flex items-start gap-2 select-text"
+                    style={{ paddingLeft: `${leadingSpaces * 8}px` }}
+                  >
+                    <span className="font-bold shrink-0 text-slate-500 font-mono">
+                      {idx + 1}.
+                    </span>
+                    <span>{parseInlineMarkdown(cleanItem)}</span>
+                  </li>
+                );
+              })}
             </ol>
           );
         case 'code':
@@ -154,12 +183,12 @@ export default function PresenterConsole() {
         case 'blockquote':
           return (
             <blockquote key={i} className="pl-3 border-l-2 border-purple-500 italic text-xs my-2">
-              “{el.content}”
+              “{parseInlineMarkdown(el.content)}”
             </blockquote>
           );
         case 'paragraph':
         default:
-          return <p key={i} className="text-xs opacity-75 mb-2">{el.content}</p>;
+          return <p key={i} className="text-xs opacity-75 mb-2">{parseInlineMarkdown(el.content)}</p>;
       }
     });
   };

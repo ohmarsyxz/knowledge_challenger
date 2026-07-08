@@ -1,10 +1,97 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Slide } from '../../app/types';
 
 interface SlideRendererProps {
   slide: Slide;
+}
+
+function ImageWithFallback({ src, alt, borderVar }: { src: string; alt?: string; borderVar: string }) {
+  const [error, setError] = useState(false);
+
+  return (
+    <div
+      className="relative w-full h-full min-h-[220px] rounded-xl overflow-hidden border shadow-xl group flex items-center justify-center bg-slate-50"
+      style={{ borderColor: borderVar }}
+    >
+      {!error ? (
+        <img
+          src={src}
+          alt={alt || 'Slide image'}
+          className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+          onError={() => setError(true)}
+        />
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-slate-100 text-center select-none">
+          <span className="text-4xl mb-3">🖼️</span>
+          <span className="text-xs font-bold text-slate-650 uppercase tracking-wider">
+            {alt || 'Image Preview'}
+          </span>
+          <span className="text-[10px] text-slate-400 mt-1 truncate max-w-xs font-mono">
+            {src}
+          </span>
+        </div>
+      )}
+      {!error && (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+      )}
+    </div>
+  );
+}
+
+export function parseInlineMarkdown(text: string): React.ReactNode[] {
+  if (!text) return [];
+
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`|\$.*?\$|\*.*?\*)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={index} className="font-extrabold" style={{ color: 'var(--slide-fg)' }}>
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code
+          key={index}
+          className="px-1.5 py-0.5 border rounded text-[0.85em] font-mono mx-0.5"
+          style={{
+            backgroundColor: 'var(--slide-card-bg)',
+            borderColor: 'var(--slide-border)',
+            color: 'var(--slide-accent)',
+          }}
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    if (part.startsWith('$') && part.endsWith('$')) {
+      return (
+        <span
+          key={index}
+          className="font-mono px-1.5 py-0.5 rounded text-[0.85em] border mx-0.5 font-semibold"
+          style={{
+            backgroundColor: 'var(--slide-card-bg)',
+            borderColor: 'var(--slide-border)',
+            color: 'var(--slide-accent)',
+          }}
+        >
+          {part.slice(1, -1)}
+        </span>
+      );
+    }
+    if (part.startsWith('*') && part.endsWith('*')) {
+      return (
+        <em key={index} className="italic">
+          {part.slice(1, -1)}
+        </em>
+      );
+    }
+    return part;
+  });
 }
 
 export default function SlideRenderer({ slide }: SlideRendererProps) {
@@ -17,10 +104,10 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
           return (
             <h1
               key={i}
-              className="text-5xl font-black tracking-tight mb-4 select-text leading-tight"
+              className="text-5xl font-black tracking-tight mb-4 select-text leading-tight py-1"
               style={{ color: 'var(--slide-fg)' }}
             >
-              {el.content}
+              {parseInlineMarkdown(el.content)}
             </h1>
           );
         case 'h2':
@@ -30,7 +117,7 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
               className="text-3xl font-extrabold mb-4 select-text"
               style={{ color: 'var(--slide-accent)' }}
             >
-              {el.content}
+              {parseInlineMarkdown(el.content)}
             </h2>
           );
         case 'h3':
@@ -40,7 +127,7 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
               className="text-2xl font-bold mb-3 opacity-90 select-text"
               style={{ color: 'var(--slide-fg)' }}
             >
-              {el.content}
+              {parseInlineMarkdown(el.content)}
             </h3>
           );
         case 'h4':
@@ -52,37 +139,57 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
               className="text-xl font-semibold mb-2 opacity-80 select-text"
               style={{ color: 'var(--slide-fg)' }}
             >
-              {el.content}
+              {parseInlineMarkdown(el.content)}
             </h4>
           );
         case 'ul':
           return (
             <ul key={i} className="space-y-3 mb-4 list-none text-xl pl-0">
-              {el.items?.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-3 select-text">
-                  <span
-                    className="mt-2.5 w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: 'var(--slide-accent)' }}
-                  />
-                  <span>{item}</span>
-                </li>
-              ))}
+              {el.items?.map((item, idx) => {
+                const leadingSpaces = item.match(/^(\s*)/)?.[1].length || 0;
+                const cleanItem = item.trim();
+                return (
+                  <li
+                    key={idx}
+                    className="flex items-start gap-3 select-text"
+                    style={{ paddingLeft: `${leadingSpaces * 12}px` }}
+                  >
+                    <span
+                      className="mt-2.5 w-2 h-2 rounded-full shrink-0"
+                      style={{
+                        backgroundColor: 'var(--slide-accent)',
+                        opacity: leadingSpaces > 0 ? 0.6 : 1,
+                        transform: leadingSpaces > 0 ? 'scale(0.8)' : 'none',
+                      }}
+                    />
+                    <span>{parseInlineMarkdown(cleanItem)}</span>
+                  </li>
+                );
+              })}
             </ul>
           );
         case 'ol':
           return (
             <ol key={i} className="space-y-3 mb-4 list-none text-xl pl-0">
-              {el.items?.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-4 select-text">
-                  <span
-                    className="font-bold shrink-0 text-lg"
-                    style={{ color: 'var(--slide-accent)' }}
+              {el.items?.map((item, idx) => {
+                const leadingSpaces = item.match(/^(\s*)/)?.[1].length || 0;
+                const cleanItem = item.trim();
+                return (
+                  <li
+                    key={idx}
+                    className="flex items-start gap-4 select-text"
+                    style={{ paddingLeft: `${leadingSpaces * 12}px` }}
                   >
-                    {idx + 1}.
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
+                    <span
+                      className="font-bold shrink-0 text-lg font-mono"
+                      style={{ color: 'var(--slide-accent)' }}
+                    >
+                      {idx + 1}.
+                    </span>
+                    <span>{parseInlineMarkdown(cleanItem)}</span>
+                  </li>
+                );
+              })}
             </ol>
           );
         case 'code':
@@ -115,18 +222,12 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
           );
         case 'image':
           return (
-            <div
+            <ImageWithFallback
               key={i}
-              className="relative w-full h-full min-h-[220px] rounded-xl overflow-hidden border shadow-xl group"
-              style={{ borderColor: 'var(--slide-border)' }}
-            >
-              <img
-                src={el.src}
-                alt={el.alt || 'Slide image'}
-                className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-            </div>
+              src={el.src || ''}
+              alt={el.alt}
+              borderVar="var(--slide-border)"
+            />
           );
         case 'blockquote':
           return (
@@ -138,7 +239,7 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
                 color: 'var(--slide-fg)',
               }}
             >
-              “{el.content}”
+              “{parseInlineMarkdown(el.content)}”
             </blockquote>
           );
         case 'paragraph':
@@ -148,7 +249,7 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
               className="text-lg opacity-80 leading-relaxed mb-4 select-text"
               style={{ color: 'var(--slide-fg)' }}
             >
-              {el.content}
+              {parseInlineMarkdown(el.content)}
             </p>
           );
         default:
@@ -204,7 +305,7 @@ export default function SlideRenderer({ slide }: SlideRendererProps) {
           ) : (
             <div className="bg-stone-300 rounded-xl animate-pulse" />
           )}
-          <div className="flex flex-col justify-center text-left max-h-[380px] overflow-y-auto">
+          <div className="flex flex-col justify-center text-left">
             {textElements.map((el, idx) => (
               <div key={idx}>{renderSlideElements([el])}</div>
             ))}

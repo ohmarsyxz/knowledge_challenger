@@ -152,24 +152,24 @@ export function parseMarkdownToSlides(markdown: string): Slide[] {
       }
 
       // 6. Parse lists
-      const ulMatch = line.match(/^[-*+]\s+(.*)/);
+      const ulMatch = line.match(/^(\s*)[-*+]\s+(.*)/);
       if (ulMatch) {
         if (currentListType === 'ol') {
           flushList();
         }
         currentListType = 'ul';
-        currentListItems.push(ulMatch[1].trim());
+        currentListItems.push(ulMatch[1] + ulMatch[2].trim());
         i++;
         continue;
       }
 
-      const olMatch = line.match(/^(\d+)\.\s+(.*)/);
+      const olMatch = line.match(/^(\s*)(\d+)\.\s+(.*)/);
       if (olMatch) {
         if (currentListType === 'ul') {
           flushList();
         }
         currentListType = 'ol';
-        currentListItems.push(olMatch[2].trim());
+        currentListItems.push(olMatch[1] + olMatch[3].trim());
         i++;
         continue;
       }
