@@ -229,34 +229,34 @@ export default function PresentationWorkspace({
   const selectedTheme = THEMES.find((t) => t.id === themeId) || THEMES[0];
 
   return (
-    <div className="flex flex-col h-screen bg-[#09090b] text-[#f4f4f5] font-sans no-print overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#f8fafc] text-slate-800 font-sans no-print overflow-hidden">
 
       {/* --- Top Nav / Action Bar --- */}
-      <header className="flex items-center justify-between px-6 py-4 bg-[#111115] border-b border-[#27272a] shadow-md z-40 shrink-0">
+      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 z-40 shrink-0">
 
         {/* Brand */}
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors cursor-pointer group"
+            className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer group"
             title="Back to Home Hub"
           >
             <ChevronLeft className="w-5 h-5 shrink-0 group-hover:-translate-x-0.5 transition-transform" />
             <span className="text-xs font-semibold">Home</span>
           </Link>
-          <div className="h-6 w-[1px] bg-zinc-800" />
+          <div className="h-6 w-[1px] bg-slate-200" />
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-[0_0_20px_rgba(147,51,234,0.4)]">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-[0_4px_15px_rgba(124,58,237,0.2)]">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                Slides <span className="text-[10px] bg-purple-500/20 text-purple-300 font-mono px-2 py-0.5 rounded-full border border-purple-500/30">PRO</span>
+              <h1 className="text-lg font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5">
+                Slides <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-full border border-purple-200">PRO</span>
               </h1>
 
               {/* Realtime Watch Sync Status Badge */}
-              <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium select-none mt-0.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium select-none mt-0.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Syncing: slides/{activeFile || 'loading...'}</span>
               </div>
             </div>
@@ -283,20 +283,20 @@ export default function PresentationWorkspace({
             setShowThemeMenu={setShowThemeMenu}
           />
 
-          <div className="h-6 w-[1px] bg-zinc-800" />
+          <div className="h-6 w-[1px] bg-slate-200" />
 
           <button
             onClick={launchPresenterWindow}
-            className="flex items-center gap-2 px-3 py-2 bg-[#1b1b22] hover:bg-[#272735] hover:text-white border border-[#2e2e3f] text-zinc-300 rounded-xl text-sm font-semibold transition"
+            className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer"
           >
-            <Tv className="w-4 h-4 text-purple-400" />
+            <Tv className="w-4 h-4 text-purple-600" />
             <span className="text-xs hidden md:inline">Presenter View</span>
           </button>
 
           {/* Present Mode Button */}
           <button
             onClick={() => setIsFullscreen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-purple-600/20 cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-purple-600/15 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
             <span>Present</span>
@@ -319,12 +319,12 @@ export default function PresentationWorkspace({
         )}
 
         {/* RIGHT PANEL: Live Presentation Preview Workspace */}
-        <section className="flex-1 flex flex-col bg-[#0f0f13] overflow-hidden min-h-0 relative">
+        <section className="flex-1 flex flex-col bg-[#f1f5f9] overflow-hidden min-h-0 relative">
 
           {/* Floating Sidebar Toggle button */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
-            className="absolute left-4 top-4 z-30 p-2.5 bg-black/60 hover:bg-black/90 border border-white/10 text-zinc-400 hover:text-white rounded-xl shadow-lg transition cursor-pointer"
+            className="absolute left-4 top-4 z-30 p-2.5 bg-white/90 hover:bg-white border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl shadow-md transition cursor-pointer"
             title="Toggle Sidebar"
           >
             <Sidebar className="w-4 h-4" />
@@ -346,7 +346,7 @@ export default function PresentationWorkspace({
                   top: '50%',
                   position: 'absolute',
                 }}
-                className={`slide-canvas flex items-center justify-center shrink-0 rounded-2xl border border-white/5 shadow-2xl ${selectedTheme.className}`}
+                className={`slide-canvas flex items-center justify-center shrink-0 rounded-2xl border border-slate-200/60 shadow-2xl ${selectedTheme.className}`}
               >
                 {selectedTheme.id === 'cyberpunk' && (
                   <div className="absolute inset-0 cyberpunk-grid pointer-events-none opacity-40" />
@@ -363,18 +363,18 @@ export default function PresentationWorkspace({
           </div>
 
           {/* Preview Navigation timeline controls */}
-          <div className="px-6 py-4 bg-[#14141a] border-t border-[#27272a] flex items-center justify-between shrink-0">
+          <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
 
             <button
               onClick={prevSlide}
               disabled={currentSlideIndex === 0}
-              className="p-2.5 bg-[#1b1b22] hover:bg-[#272732] border border-[#2e2e3c] rounded-xl text-zinc-300 disabled:opacity-40 disabled:hover:bg-[#1b1b22] transition cursor-pointer"
+              className="p-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-700 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
             <div className="flex flex-col items-center gap-1.5">
-              <span className="text-sm font-semibold tracking-wider font-mono text-zinc-200">
+              <span className="text-sm font-bold tracking-wider font-mono text-slate-800">
                 Slide {currentSlideIndex + 1} / {slides.length}
               </span>
               <div className="flex gap-1">
@@ -382,7 +382,7 @@ export default function PresentationWorkspace({
                   <button
                     key={idx}
                     onClick={() => setCurrentSlideIndex(idx)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'w-6 bg-purple-500' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'
+                    className={`h-1.5 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'w-6 bg-purple-600' : 'w-1.5 bg-slate-200 hover:bg-slate-400'
                       }`}
                   />
                 ))}
@@ -392,7 +392,7 @@ export default function PresentationWorkspace({
             <button
               onClick={nextSlide}
               disabled={currentSlideIndex === slides.length - 1}
-              className="p-2.5 bg-[#1b1b22] hover:bg-[#272732] border border-[#2e2e3c] rounded-xl text-zinc-300 disabled:opacity-40 disabled:hover:bg-[#1b1b22] transition cursor-pointer"
+              className="p-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-700 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer"
             >
               <ChevronRight className="w-5 h-5" />
             </button>

@@ -6,8 +6,7 @@ import {
   ChevronRight,
   Clock,
   RotateCcw,
-  Tv,
-  HelpCircle
+  Tv
 } from 'lucide-react';
 import { parseMarkdownToSlides } from '../../app/utils/parser';
 import { Slide, ThemeId, Theme, SyncMessage } from '../../app/types';
@@ -142,13 +141,13 @@ export default function PresenterConsole() {
           );
         case 'code':
           return (
-            <pre key={i} className="bg-black/30 border border-white/10 p-3 rounded-lg overflow-x-auto text-[9px] font-mono leading-normal text-left max-w-full my-2">
+            <pre key={i} className="bg-black/35 border border-white/10 p-3 rounded-lg overflow-x-auto text-[9px] font-mono leading-normal text-left max-w-full my-2">
               <code>{el.content}</code>
             </pre>
           );
         case 'image':
           return (
-            <div key={i} className="bg-black/20 border border-white/5 rounded-lg p-2 text-center text-[10px] text-zinc-400">
+            <div key={i} className="bg-slate-100 border border-slate-205 rounded-lg p-2 text-center text-[10px] text-slate-500">
               🖼️ Image: {el.alt || 'No details'}
             </div>
           );
@@ -168,37 +167,37 @@ export default function PresenterConsole() {
   const selectedTheme = THEMES.find((t) => t.id === themeId) || THEMES[0];
 
   return (
-    <div className="flex flex-col h-screen bg-[#07070a] text-zinc-200 font-sans overflow-hidden">
-
+    <div className="flex flex-col h-screen bg-[#f8fafc] text-slate-800 font-sans overflow-hidden">
+      
       {/* Top Banner Dashboard */}
-      <header className="flex items-center justify-between px-6 py-4 bg-[#0d0d12] border-b border-[#212128] z-10 shrink-0">
+      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 z-10 shrink-0">
         <div className="flex items-center gap-3">
           <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-sm font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
               Presenter Console
-              <span className="text-[10px] font-mono text-zinc-500">v1.0</span>
+              <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v1.0</span>
             </h1>
-            <p className="text-[10px] text-zinc-400">
+            <p className="text-[10px] text-slate-500 font-medium">
               {isConnected ? 'Connected to presentation page' : 'Waiting for connection...'}
             </p>
           </div>
         </div>
 
         {/* Dynamic Slide Counter */}
-        <div className="text-sm font-semibold tracking-wider font-mono bg-zinc-800/40 border border-zinc-700/30 px-3 py-1 rounded-lg">
+        <div className="text-sm font-bold tracking-wider font-mono bg-slate-100 border border-slate-200 px-3.5 py-1.5 rounded-xl text-slate-700 shadow-sm">
           Slide {currentSlideIndex + 1} of {slides.length || 1}
         </div>
 
         {/* Running Timer */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-mono text-emerald-400">
-            <Clock className="w-4 h-4 opacity-75" />
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold font-mono text-emerald-700 shadow-sm">
+            <Clock className="w-4 h-4 opacity-75 text-emerald-600" />
             <span>{formatTime(timeElapsed)}</span>
           </div>
           <button
             onClick={() => setTimeElapsed(0)}
-            className="p-1 hover:bg-zinc-850 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white transition cursor-pointer"
+            className="p-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-500 hover:text-slate-900 transition cursor-pointer"
             title="Reset Timer"
           >
             <RotateCcw className="w-4 h-4" />
@@ -209,18 +208,18 @@ export default function PresenterConsole() {
 
       {/* Main Split Console Grid */}
       <main className="flex-1 grid grid-cols-12 gap-6 p-6 overflow-hidden min-h-0">
-
+        
         {/* LEFT COLUMN (Slide Previews) */}
         <section className="col-span-8 flex flex-col gap-6 overflow-hidden min-h-0">
-
+          
           {/* Active Preview */}
-          <div className="flex-1 flex flex-col bg-[#0f0f15] border border-[#212128] rounded-xl p-4 overflow-hidden min-h-0 relative">
-            <span className="text-xs font-semibold tracking-wider uppercase text-purple-400 flex items-center gap-2 mb-2 shrink-0">
-              <Tv className="w-3.5 h-3.5" />
+          <div className="flex-1 flex flex-col bg-white border border-slate-200/80 rounded-2xl p-4 overflow-hidden min-h-0 relative shadow-sm">
+            <span className="text-xs font-bold tracking-wider uppercase text-purple-650 flex items-center gap-2 mb-2 shrink-0">
+              <Tv className="w-3.5 h-3.5 text-purple-600" />
               <span>Current Slide Screen</span>
             </span>
-
-            <div className="flex-1 relative bg-black/40 border border-white/5 rounded-lg overflow-hidden">
+            
+            <div className="flex-1 relative bg-slate-50 border border-slate-150 rounded-xl overflow-hidden">
               {activeSlide ? (
                 <div
                   style={{
@@ -230,7 +229,7 @@ export default function PresenterConsole() {
                     left: '50%',
                     top: '50%',
                   }}
-                  className={`absolute shrink-0 border border-white/5 shadow-2xl rounded-2xl ${selectedTheme.className}`}
+                  className={`absolute shrink-0 border border-slate-200/60 shadow-2xl rounded-2xl ${selectedTheme.className}`}
                 >
                   {selectedTheme.id === 'cyberpunk' && (
                     <div className="absolute inset-0 cyberpunk-grid pointer-events-none opacity-40" />
@@ -240,7 +239,7 @@ export default function PresenterConsole() {
                   </div>
                 </div>
               ) : (
-                <div className="text-zinc-500 text-xs flex items-center justify-center h-full">
+                <div className="text-slate-400 text-xs flex items-center justify-center h-full">
                   No active slide content found.
                 </div>
               )}
@@ -248,12 +247,12 @@ export default function PresenterConsole() {
           </div>
 
           {/* Up Next Preview */}
-          <div className="h-56 flex flex-col bg-[#0f0f15] border border-[#212128] rounded-xl p-4 overflow-hidden shrink-0 relative">
-            <span className="text-xs font-semibold tracking-wider uppercase text-zinc-400 flex items-center gap-2 mb-2">
+          <div className="h-56 flex flex-col bg-white border border-slate-200/80 rounded-2xl p-4 overflow-hidden shrink-0 relative shadow-sm">
+            <span className="text-xs font-bold tracking-wider uppercase text-slate-500 flex items-center gap-2 mb-2">
               <span>Up Next</span>
             </span>
-
-            <div className="flex-1 relative bg-black/40 border border-white/5 rounded-lg overflow-hidden">
+            
+            <div className="flex-1 relative bg-slate-50 border border-slate-150 rounded-xl overflow-hidden">
               {nextSlide ? (
                 <div
                   style={{
@@ -263,7 +262,7 @@ export default function PresenterConsole() {
                     left: '50%',
                     top: '50%',
                   }}
-                  className={`absolute shrink-0 border border-white/5 opacity-70 rounded-2xl ${selectedTheme.className}`}
+                  className={`absolute shrink-0 border border-slate-200/65 opacity-75 rounded-2xl ${selectedTheme.className}`}
                 >
                   {selectedTheme.id === 'cyberpunk' && (
                     <div className="absolute inset-0 cyberpunk-grid pointer-events-none opacity-40" />
@@ -273,7 +272,7 @@ export default function PresenterConsole() {
                   </div>
                 </div>
               ) : (
-                <div className="text-zinc-500 text-xs flex items-center justify-center h-full select-none">
+                <div className="text-slate-400 text-xs flex items-center justify-center h-full select-none">
                   End of Presentation
                 </div>
               )}
@@ -284,27 +283,27 @@ export default function PresenterConsole() {
 
         {/* RIGHT COLUMN (Presenter Notes & Controls) */}
         <section className="col-span-4 flex flex-col gap-6 overflow-hidden min-h-0">
-
+          
           {/* Notes Container */}
-          <div className="flex-1 flex flex-col bg-[#0f0f15] border border-[#212128] rounded-xl p-5 overflow-hidden min-h-0">
-            <span className="text-xs font-semibold tracking-wider uppercase text-zinc-400 flex items-center gap-2 mb-3 shrink-0">
+          <div className="flex-1 flex flex-col bg-white border border-slate-200/80 rounded-2xl p-5 overflow-hidden min-h-0 shadow-sm">
+            <span className="text-xs font-bold tracking-wider uppercase text-slate-500 flex items-center gap-2 mb-3 shrink-0">
               <span>Speaker Notes</span>
             </span>
-            <div className="flex-1 bg-black/20 border border-white/5 rounded-lg p-5 overflow-y-auto font-sans leading-relaxed text-sm select-text text-zinc-300">
+            <div className="flex-1 bg-slate-50 border border-slate-200/80 rounded-xl p-5 overflow-y-auto font-sans leading-relaxed text-sm select-text text-slate-700">
               {activeSlide?.notes ? (
                 <p className="whitespace-pre-line">{activeSlide.notes}</p>
               ) : (
-                <span className="italic text-zinc-500 text-xs">No speaker notes provided for this slide.</span>
+                <span className="italic text-slate-400 text-xs">No speaker notes provided for this slide.</span>
               )}
             </div>
           </div>
 
           {/* Quick Click navigation bar */}
-          <div className="bg-[#0f0f15] border border-[#212128] rounded-xl p-4 shrink-0 flex items-center justify-between">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shrink-0 flex items-center justify-between shadow-sm">
             <button
               onClick={prevSlide}
               disabled={currentSlideIndex === 0}
-              className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer flex items-center gap-1"
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold tracking-wide transition cursor-pointer flex items-center gap-1"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Back</span>
@@ -313,7 +312,7 @@ export default function PresenterConsole() {
             <button
               onClick={nextSlideAction}
               disabled={currentSlideIndex === slides.length - 1}
-              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:hover:bg-purple-600 text-white rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer flex items-center gap-1 shadow-lg shadow-purple-950/20"
+              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:hover:bg-purple-600 text-white rounded-xl text-xs font-bold tracking-wide transition cursor-pointer flex items-center gap-1 shadow-lg shadow-purple-600/15"
             >
               <span>Next</span>
               <ChevronRight className="w-4 h-4" />

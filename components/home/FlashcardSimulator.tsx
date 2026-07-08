@@ -46,30 +46,30 @@ export default function FlashcardSimulator() {
         onClick={() => setIsFlipped(!isFlipped)}
         className="w-full h-44 cursor-pointer relative perspective"
       >
-        <div className={`w-full h-full duration-500 preserve-3d absolute rounded-2xl border shadow-xl flex items-center justify-center p-6 text-center select-none ${isFlipped
-            ? 'rotate-y-180 bg-gradient-to-tr from-[#1b1928] to-[#121217] border-purple-500/40 text-purple-200'
-            : 'bg-gradient-to-tr from-[#14141e] to-[#0f0f15] border-zinc-850 text-zinc-100 hover:border-zinc-700'
+        <div className={`w-full h-full duration-500 preserve-3d absolute rounded-2xl border shadow-lg flex items-center justify-center p-6 text-center select-none ${isFlipped
+            ? 'rotate-y-180 bg-gradient-to-tr from-purple-50 to-violet-50 border-purple-200 text-purple-950 shadow-purple-100/50'
+            : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:shadow-xl shadow-slate-100/70'
           }`}>
           {/* Front Side */}
           <div className={`absolute flex flex-col items-center justify-center p-4 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/25 mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 mb-3">
               {activeCard.category}
             </span>
-            <p className="text-sm font-semibold text-zinc-200 px-4 leading-relaxed">
+            <p className="text-sm font-bold text-slate-850 px-4 leading-relaxed">
               {activeCard.question}
             </p>
-            <span className="text-[10px] text-zinc-500 mt-4 flex items-center gap-1">
-              <RotateCw className="w-3.5 h-3.5" />
+            <span className="text-[10px] text-slate-400 mt-4 flex items-center gap-1">
+              <RotateCw className="w-3.5 h-3.5 text-slate-400" />
               <span>Click card to reveal answer</span>
             </span>
           </div>
 
           {/* Back Side */}
           <div className={`absolute flex flex-col items-center justify-center p-4 rotate-y-180 backface-hidden ${isFlipped ? 'opacity-100' : 'opacity-0'}`}>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-full border border-purple-500/25 mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-purple-700 bg-purple-100 px-2.5 py-1 rounded-full border border-purple-200 mb-3">
               Recall Explanation
             </span>
-            <p className="text-xs text-zinc-350 px-4 leading-relaxed">
+            <p className="text-xs text-slate-700 font-medium px-4 leading-relaxed">
               {activeCard.answer}
             </p>
           </div>
@@ -79,10 +79,10 @@ export default function FlashcardSimulator() {
       {/* Deck Navigation */}
       <button
         onClick={(e) => {
-          e.stopPropagation(); // Avoid triggering double flips
+          e.stopPropagation();
           handleNextCard();
         }}
-        className="mt-4 flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-indigo-300 transition-colors cursor-pointer"
+        className="mt-4 flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
       >
         <span>Skip to Next Card</span>
         <ChevronRight className="w-4 h-4" />
