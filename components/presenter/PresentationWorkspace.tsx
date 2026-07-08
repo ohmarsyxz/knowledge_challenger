@@ -10,6 +10,7 @@ import {
   Sparkles,
   Sidebar
 } from 'lucide-react';
+import Link from 'next/link';
 import { parseMarkdownToSlides } from '../../app/utils/parser';
 import { Slide, ThemeId, Theme, SyncMessage } from '../../app/types';
 
@@ -234,19 +235,30 @@ export default function PresentationWorkspace({
       <header className="flex items-center justify-between px-6 py-4 bg-[#111115] border-b border-[#27272a] shadow-md z-40 shrink-0">
 
         {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-[0_0_20px_rgba(147,51,234,0.4)]">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-              Slides <span className="text-[10px] bg-purple-500/20 text-purple-300 font-mono px-2 py-0.5 rounded-full border border-purple-500/30">PRO</span>
-            </h1>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors cursor-pointer group"
+            title="Back to Home Hub"
+          >
+            <ChevronLeft className="w-5 h-5 shrink-0 group-hover:-translate-x-0.5 transition-transform" />
+            <span className="text-xs font-semibold">Home</span>
+          </Link>
+          <div className="h-6 w-[1px] bg-zinc-800" />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-[0_0_20px_rgba(147,51,234,0.4)]">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+                Slides <span className="text-[10px] bg-purple-500/20 text-purple-300 font-mono px-2 py-0.5 rounded-full border border-purple-500/30">PRO</span>
+              </h1>
 
-            {/* Realtime Watch Sync Status Badge */}
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium select-none mt-0.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Syncing: slides/{activeFile || 'loading...'}</span>
+              {/* Realtime Watch Sync Status Badge */}
+              <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium select-none mt-0.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Syncing: slides/{activeFile || 'loading...'}</span>
+              </div>
             </div>
           </div>
         </div>
