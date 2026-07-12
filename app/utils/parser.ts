@@ -97,7 +97,7 @@ export function parseMarkdownToSlides(markdown: string): Slide[] {
           isParsingNotes = false;
         } else {
           // Multiline comment
-          let content = trimmed.replace(/^<!--\s*(note|notes):?\s*/i, '');
+          const content = trimmed.replace(/^<!--\s*(note|notes):?\s*/i, '');
           notes += (notes ? '\n' : '') + content;
         }
         i++;

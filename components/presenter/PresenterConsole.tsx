@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -82,28 +82,29 @@ export default function PresenterConsole() {
   const nextSlide = slides[currentSlideIndex + 1] || null;
 
   // --- Navigation Action Controllers ---
-  const prevSlide = () => {
-    const prevIdx = Math.max(0, currentSlideIndex - 1);
-    setCurrentSlideIndex(prevIdx);
+  // Moving to an index also has to tell the main window about it, so the two
+  // always travel together.
+  const goToSlide = useCallback((index: number) => {
+    setCurrentSlideIndex(index);
     syncChannelRef.current?.postMessage({
       type: 'SLIDE_CHANGE',
-      currentSlideIndex: prevIdx,
+      currentSlideIndex: index,
     });
-  };
+  }, []);
 
-  const nextSlideAction = () => {
-    const nextIdx = Math.min(slides.length - 1, currentSlideIndex + 1);
-    setCurrentSlideIndex(nextIdx);
-    syncChannelRef.current?.postMessage({
-      type: 'SLIDE_CHANGE',
-      currentSlideIndex: nextIdx,
-    });
-  };
+  const prevSlide = useCallback(() => {
+    goToSlide(Math.max(0, currentSlideIndex - 1));
+  }, [currentSlideIndex, goToSlide]);
+
+  const nextSlideAction = useCallback(() => {
+    goToSlide(Math.min(slides.length - 1, currentSlideIndex + 1));
+  }, [currentSlideIndex, slides.length, goToSlide]);
 
   // Listen to keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === 'Space') {
+      // Spacebar is ' ' in KeyboardEvent.key — 'Space' is its .code and never matches.
+      if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault();
         nextSlideAction();
       } else if (e.key === 'ArrowLeft') {
@@ -113,7 +114,7 @@ export default function PresenterConsole() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [slides.length, currentSlideIndex]);
+  }, [nextSlideAction, prevSlide]);
 
   // --- Slide Render Utilities ---
   const renderSlideElements = (elements: Slide['elements']) => {

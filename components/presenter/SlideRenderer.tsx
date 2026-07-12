@@ -13,10 +13,14 @@ function ImageWithFallback({ src, alt, borderVar }: { src: string; alt?: string;
 
   return (
     <div
-      className="relative w-full h-full min-h-[220px] rounded-xl overflow-hidden border shadow-xl group flex items-center justify-center bg-slate-50"
+      className="relative w-full h-full min-h-55 rounded-xl overflow-hidden border shadow-xl group flex items-center justify-center bg-surface-muted"
       style={{ borderColor: borderVar }}
     >
       {!error ? (
+        // next/image is deliberately not used: src comes from arbitrary user
+        // markdown, and next/image throws at runtime for any host absent from
+        // remotePatterns. A lint warning beats a crash on someone's slide.
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
           alt={alt || 'Slide image'}

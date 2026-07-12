@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Play,
   Tv,
@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { parseMarkdownToSlides } from '../../app/utils/parser';
 import { ThemeId, SyncMessage } from '../../app/types';
 import { getTheme } from '../../app/utils/themes';
+import { useStoredTheme, setStoredTheme } from '../../app/utils/useStoredTheme';
 
 import SlideRenderer from './SlideRenderer';
 import DeckSidebar from './DeckSidebar';
@@ -27,14 +28,19 @@ interface PresentationWorkspaceProps {
   initialMarkdown: string;
 }
 
+/** The list is sorted server-side, so positional comparison is sufficient. */
+function sameFileList(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((name, i) => name === b[i]);
+}
+
 export default function PresentationWorkspace({
   initialFiles,
   initialActiveFile,
   initialMarkdown
-}: PresentationWorkspaceProps) {
+}: Readonly<PresentationWorkspaceProps>) {
   // --- States ---
   const [markdown, setMarkdown] = useState<string>(initialMarkdown);
-  const [themeId, setThemeId] = useState<ThemeId>('glass');
+  const themeId = useStoredTheme();
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showThemeMenu, setShowThemeMenu] = useState<boolean>(false);
@@ -43,7 +49,11 @@ export default function PresentationWorkspace({
   // Workspace File Sync states
   const [files, setFiles] = useState<string[]>(initialFiles);
   const [activeFile, setActiveFile] = useState<string>(initialActiveFile);
-  const [lastMTime, setLastMTime] = useState<number>(0);
+
+  // Watcher bookkeeping lives in refs, not state: it changes on every poll and
+  // must never, by itself, trigger a render.
+  const activeFileRef = useRef<string>(initialActiveFile);
+  const lastMTimeRef = useRef<number>(0);
 
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
 
@@ -56,70 +66,93 @@ export default function PresentationWorkspace({
   // Broadcast channel ref
   const syncChannelRef = useRef<BroadcastChannel | null>(null);
 
-  // --- Workspace slides/ File Watcher (Polling) ---
+  // --- Workspace slides/ File Watcher ---
+  // Pull the markdown body for one deck. Called on connect and whenever the
+  // server signals that the file (or the active selection) changed.
+  const fetchContent = useCallback(async (file: string) => {
+    try {
+      const res = await fetch(`/api/slides?file=${encodeURIComponent(file)}`);
+      if (!res.ok) throw new Error('Slide content request failed');
+      const data = await res.json();
+
+      lastMTimeRef.current = data.mtime;
+      setMarkdown(data.markdown);
+
+      if (data.activeFile !== activeFileRef.current) {
+        activeFileRef.current = data.activeFile;
+        setActiveFile(data.activeFile);
+        setCurrentSlideIndex(0); // Reset index on deck swap
+      }
+    } catch (err) {
+      console.error('Failed to load slide content:', err);
+    }
+  }, []);
+
+  // Subscribe to server-pushed change events (SSE). The server watches the
+  // slides/ folder with fs.watch and only sends when something actually
+  // changes, so an idle deck costs zero network traffic. EventSource also
+  // reconnects on its own if the connection drops.
   useEffect(() => {
-    const fetchSlides = async () => {
+    const url = `/api/slides/stream?file=${encodeURIComponent(activeFile)}`;
+    const source = new EventSource(url);
+
+    source.addEventListener('slides', (event) => {
       try {
-        const url = activeFile ? `/api/slides?file=${activeFile}` : '/api/slides';
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('API failed');
-        const data = await res.json();
+        const snap = JSON.parse((event as MessageEvent).data) as {
+          files: string[];
+          activeFile: string;
+          mtime: number;
+        };
 
-        if (data.files) setFiles(data.files);
-        if (data.activeFile && !activeFile) {
-          setActiveFile(data.activeFile);
-        }
+        setFiles((prev) => (sameFileList(prev, snap.files) ? prev : snap.files));
 
-        // Trigger updates if file timestamp changed or we switched the active file
-        if (data.activeFile !== activeFile || data.mtime !== lastMTime) {
-          setMarkdown(data.markdown);
-          setLastMTime(data.mtime);
-
-          if (data.activeFile !== activeFile) {
-            setActiveFile(data.activeFile);
-            setCurrentSlideIndex(0); // Reset index on slide swap
-          }
+        const fileChanged = snap.activeFile !== activeFileRef.current;
+        const contentChanged = snap.mtime !== lastMTimeRef.current;
+        if (fileChanged || contentChanged) {
+          fetchContent(snap.activeFile);
         }
       } catch (err) {
-        console.error('Failed to sync slides:', err);
+        console.error('Malformed slides event:', err);
       }
-    };
+    });
 
-    fetchSlides(); // Initial fetch
+    return () => source.close();
+  }, [activeFile, fetchContent]);
 
-    const interval = setInterval(fetchSlides, 1000);
-    return () => clearInterval(interval);
-  }, [activeFile, lastMTime]);
-
-  // Load configuration from localstorage on mount
+  // Latest state for the channel handler to read, so answering REQUEST_STATE
+  // never requires rebuilding the channel itself.
+  const stateRef = useRef({ currentSlideIndex, markdown, themeId });
   useEffect(() => {
-    const savedTheme = localStorage.getItem('presentation_theme');
-    if (savedTheme) setThemeId(savedTheme as ThemeId);
+    stateRef.current = { currentSlideIndex, markdown, themeId };
+  }, [currentSlideIndex, markdown, themeId]);
 
-    // Setup sync channel
+  // The channel is a connection, not derived state: open it once per mount.
+  // Keying it on slide/markdown/theme tore it down on every arrow-key press.
+  useEffect(() => {
     const channel = new BroadcastChannel('presentation_sync');
     syncChannelRef.current = channel;
 
-    // Handle messages from Presenter View
     channel.onmessage = (event: MessageEvent<SyncMessage>) => {
       const msg = event.data;
       if (msg.type === 'SLIDE_CHANGE') {
         setCurrentSlideIndex(msg.currentSlideIndex);
       } else if (msg.type === 'REQUEST_STATE') {
+        const { currentSlideIndex: idx, markdown: md, themeId: theme } = stateRef.current;
         channel.postMessage({
           type: 'SYNC_STATE',
-          currentSlideIndex: currentSlideIndex,
-          markdown: markdown,
-          themeId: themeId,
-          totalSlides: parseMarkdownToSlides(markdown).length
+          currentSlideIndex: idx,
+          markdown: md,
+          themeId: theme,
+          totalSlides: parseMarkdownToSlides(md).length
         });
       }
     };
 
     return () => {
       channel.close();
+      syncChannelRef.current = null;
     };
-  }, [currentSlideIndex, markdown, themeId]);
+  }, []);
 
   // Synchronize state when slide index or theme changes
   useEffect(() => {
@@ -135,14 +168,15 @@ export default function PresentationWorkspace({
   }, [currentSlideIndex, markdown, themeId]);
 
   const handleThemeChange = (id: ThemeId) => {
-    setThemeId(id);
-    localStorage.setItem('presentation_theme', id);
+    setStoredTheme(id); // Writes through to localStorage; the store re-renders us
     setShowThemeMenu(false);
   };
 
   const handleDeckChange = (filename: string) => {
-    setActiveFile(filename);
-    setLastMTime(0); // Forces immediate watch fetch
+    activeFileRef.current = filename;
+    lastMTimeRef.current = 0; // Force a content pull once the stream reconnects
+    setActiveFile(filename); // Reopens the SSE connection for the new file
+    setCurrentSlideIndex(0);
     setShowDeckMenu(false);
   };
 
@@ -183,18 +217,19 @@ export default function PresentationWorkspace({
   }, [isFullscreen, slides, currentSlideIndex]);
 
   // --- Navigation Controls ---
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     setCurrentSlideIndex((prev) => Math.max(0, prev - 1));
-  };
+  }, []);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentSlideIndex((prev) => Math.min(slides.length - 1, prev + 1));
-  };
+  }, [slides.length]);
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === 'Space') {
+      // Spacebar is ' ' in KeyboardEvent.key — 'Space' is its .code and never matches.
+      if (e.key === 'ArrowRight' || e.key === ' ') {
         if (isFullscreen) e.preventDefault();
         nextSlide();
       } else if (e.key === 'ArrowLeft') {
@@ -205,7 +240,7 @@ export default function PresentationWorkspace({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [slides.length, isFullscreen]);
+  }, [isFullscreen, nextSlide, prevSlide]);
 
   // --- Presenter Window Launcher ---
   const launchPresenterWindow = () => {
@@ -486,7 +521,7 @@ export default function PresentationWorkspace({
 
       {/* Printable Containers for PDF Generation */}
       <div className="hidden print-container print:block">
-        {slides.map((slide, idx) => (
+        {slides.map((slide) => (
           <div
             key={slide.id}
             className={`print-slide ${selectedTheme.className}`}
