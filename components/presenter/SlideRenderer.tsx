@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { ImageOff } from 'lucide-react';
 import { Slide } from '../../app/types';
 
 interface SlideRendererProps {
@@ -23,12 +24,12 @@ function ImageWithFallback({ src, alt, borderVar }: { src: string; alt?: string;
           onError={() => setError(true)}
         />
       ) : (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-slate-100 text-center select-none">
-          <span className="text-4xl mb-3">🖼️</span>
-          <span className="text-xs font-bold text-slate-650 uppercase tracking-wider">
-            {alt || 'Image Preview'}
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-surface-muted text-center select-none">
+          <ImageOff className="w-8 h-8 mb-3 text-foreground-subtle" aria-hidden="true" />
+          <span className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
+            {alt || 'Image unavailable'}
           </span>
-          <span className="text-[10px] text-slate-400 mt-1 truncate max-w-xs font-mono">
+          <span className="text-[10px] text-foreground-subtle mt-1 truncate max-w-xs font-mono">
             {src}
           </span>
         </div>

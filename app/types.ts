@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
+
 export type ElementType =
   | 'h1'
   | 'h2'
@@ -37,6 +39,8 @@ export interface Theme {
   id: ThemeId;
   name: string;
   className: string; // The root wrapper class for styling
+  icon: LucideIcon;
+  swatch: string; // Preview dot colour, shown alongside the label
 }
 
 export interface Template {

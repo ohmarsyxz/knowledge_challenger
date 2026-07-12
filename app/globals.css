@@ -1,15 +1,67 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------
+   Semantic design tokens — Knowledge Challenger
+   Study purple (#7C3AED) + emerald accent, light-first.
+   Components must consume these tokens, never raw hex.
+   --------------------------------------------------------------- */
 :root {
-  --background: #09090b;
-  --foreground: #f4f4f5;
-  --editor-bg: #111115;
-  --editor-border: #27272a;
+  /* Surfaces */
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --surface-sunken: #f8fafc;
+
+  /* Text */
+  --foreground: #0f172a;
+  --foreground-muted: #475569;
+  /* Darker than slate-500: slate-500 only hits 4.34:1 on --surface-muted. */
+  --foreground-subtle: #5d6b80;
+
+  /* Brand */
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-soft: #f5f3ff;
+  --primary-border: #ddd6fe;
+  --on-primary: #ffffff;
+
+  /* Accent / status — emerald-700, not -600: -600 is only 3.77:1 as text on white. */
+  --accent: #047857;
+  --accent-soft: #ecfdf5;
+  --accent-border: #a7f3d0;
+  --destructive: #dc2626;
+
+  /* Lines */
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --ring: #7c3aed;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-border: var(--primary-border);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-border: var(--accent-border);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -19,6 +71,20 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
   overflow-x: hidden;
+  /* Inter/Geist precision system: tighten tracking on display text only */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus ring on every keyboard-focused control (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Tabular figures for counters/timers so they don't jitter as digits change */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Premium Presentation Themes */
@@ -67,7 +133,9 @@ body {
   background: var(--slide-bg);
   color: var(--slide-fg);
   font-family: var(--slide-font), sans-serif;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
   overflow: hidden;
   box-shadow: var(--slide-glow);
 }
@@ -85,7 +153,7 @@ body {
 }
 
 .slide-content-anim {
-  animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideIn 0.5s var(--ease-out) forwards;
 }
 
 /* Custom Scrollbar for Editor */
@@ -99,12 +167,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: var(--border-strong);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: var(--foreground-subtle);
 }
 
 /* Floating Grid Background for Cyberpunk Theme */
@@ -191,4 +259,14 @@ body {
   line-height: 2.5rem !important;
 }
 
-
+/* Users who ask for less motion get none of the decorative kind */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Slides PRO - Fast MD to Slides Converter",
-  description: "Simple and lightweight Markdown presentation player for slides in a folder.",
+  title: "Knowledge Challenger — Markdown to slides, flashcards & mind maps",
+  description:
+    "Turn a folder of markdown notes into presentation decks, active-recall flashcards, and mind maps.",
 };
 
 export default function RootLayout({

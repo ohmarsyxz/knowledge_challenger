@@ -8,23 +8,18 @@ import {
   ChevronRight,
   Minimize2,
   Sparkles,
-  Sidebar
+  Sidebar,
+  FileQuestionMark
 } from 'lucide-react';
 import Link from 'next/link';
 import { parseMarkdownToSlides } from '../../app/utils/parser';
-import { Slide, ThemeId, Theme, SyncMessage } from '../../app/types';
+import { ThemeId, SyncMessage } from '../../app/types';
+import { getTheme } from '../../app/utils/themes';
 
 import SlideRenderer from './SlideRenderer';
 import DeckSidebar from './DeckSidebar';
 import ThemeSelector from './ThemeSelector';
 import DeckSelector from './DeckSelector';
-
-const THEMES: Theme[] = [
-  { id: 'glass', name: '🔮 Dark Glassmorphism', className: 'theme-glass' },
-  { id: 'editorial', name: '🎨 Editorial Light', className: 'theme-editorial' },
-  { id: 'cyberpunk', name: '⚡ Cyberpunk Accent', className: 'theme-cyberpunk' },
-  { id: 'monotone', name: '🔳 Minimalist Monotone', className: 'theme-monotone' },
-];
 
 interface PresentationWorkspaceProps {
   initialFiles: string[];
@@ -226,39 +221,41 @@ export default function PresentationWorkspace({
     );
   };
 
-  const selectedTheme = THEMES.find((t) => t.id === themeId) || THEMES[0];
+  const selectedTheme = getTheme(themeId);
 
   return (
-    <div className="flex flex-col h-screen bg-[#f8fafc] text-slate-800 font-sans no-print overflow-hidden">
+    <div className="flex flex-col h-screen bg-background text-foreground font-sans no-print overflow-hidden">
 
       {/* --- Top Nav / Action Bar --- */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 z-40 shrink-0">
+      <header className="flex items-center justify-between gap-4 px-6 py-3 bg-surface border-b border-border z-40 shrink-0">
 
         {/* Brand */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 min-w-0">
           <Link
             href="/"
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer group"
-            title="Back to Home Hub"
+            className="flex items-center gap-1.5 h-11 px-2 -ml-2 rounded-lg text-foreground-subtle hover:text-foreground hover:bg-surface-muted transition-colors cursor-pointer group"
           >
-            <ChevronLeft className="w-5 h-5 shrink-0 group-hover:-translate-x-0.5 transition-transform" />
+            <ChevronLeft className="w-5 h-5 shrink-0 group-hover:-translate-x-0.5 transition-transform" aria-hidden="true" />
             <span className="text-xs font-semibold">Home</span>
           </Link>
-          <div className="h-6 w-[1px] bg-slate-200" />
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-[0_4px_15px_rgba(124,58,237,0.2)]">
-              <Sparkles className="w-5 h-5 text-white" />
+          <div className="h-6 w-px bg-border" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary shrink-0">
+              <Sparkles className="w-5 h-5 text-on-primary" aria-hidden="true" />
             </div>
-            <div>
-              <h1 className="text-lg font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5">
-                Slides <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-full border border-purple-200">PRO</span>
+            <div className="min-w-0">
+              <h1 className="text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
+                Slides
+                <span className="text-[10px] bg-primary-soft text-primary font-bold px-2 py-0.5 rounded-full border border-primary-border">
+                  PRO
+                </span>
               </h1>
 
-              {/* Realtime Watch Sync Status Badge */}
-              <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium select-none mt-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Syncing: slides/{activeFile || 'loading...'}</span>
-              </div>
+              {/* Realtime watch status — icon + text, not colour alone */}
+              <p className="flex items-center gap-1.5 text-xs text-accent font-medium mt-0.5 min-w-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0" aria-hidden="true" />
+                <span className="truncate font-mono">slides/{activeFile || 'loading…'}</span>
+              </p>
             </div>
           </div>
         </div>
@@ -283,22 +280,22 @@ export default function PresentationWorkspace({
             setShowThemeMenu={setShowThemeMenu}
           />
 
-          <div className="h-6 w-[1px] bg-slate-200" />
+          <div className="h-6 w-px bg-border" />
 
           <button
             onClick={launchPresenterWindow}
-            className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer"
+            className="flex items-center gap-2 h-11 px-3 bg-surface hover:bg-surface-muted border border-border text-foreground-muted rounded-xl text-sm font-semibold transition-colors duration-150 cursor-pointer"
           >
-            <Tv className="w-4 h-4 text-purple-600" />
-            <span className="text-xs hidden md:inline">Presenter View</span>
+            <Tv className="w-4 h-4 text-primary" aria-hidden="true" />
+            <span className="text-xs hidden md:inline">Presenter view</span>
           </button>
 
-          {/* Present Mode Button */}
+          {/* Present Mode Button — the one primary action on this screen */}
           <button
             onClick={() => setIsFullscreen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-purple-600/15 cursor-pointer"
+            className="flex items-center gap-2 h-11 px-5 bg-primary hover:bg-primary-hover text-on-primary rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 transition-colors duration-150 cursor-pointer"
           >
-            <Play className="w-4 h-4 fill-white" />
+            <Play className="w-4 h-4 fill-current" aria-hidden="true" />
             <span>Present</span>
           </button>
 
@@ -319,15 +316,16 @@ export default function PresentationWorkspace({
         )}
 
         {/* RIGHT PANEL: Live Presentation Preview Workspace */}
-        <section className="flex-1 flex flex-col bg-[#f1f5f9] overflow-hidden min-h-0 relative">
+        <section className="flex-1 flex flex-col bg-surface-muted overflow-hidden min-h-0 relative">
 
           {/* Floating Sidebar Toggle button */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
-            className="absolute left-4 top-4 z-30 p-2.5 bg-white/90 hover:bg-white border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl shadow-md transition cursor-pointer"
-            title="Toggle Sidebar"
+            aria-expanded={showSidebar}
+            aria-label={showSidebar ? 'Hide slide list' : 'Show slide list'}
+            className="absolute left-4 top-4 z-30 flex items-center justify-center w-11 h-11 bg-surface/90 hover:bg-surface border border-border text-foreground-subtle hover:text-foreground rounded-xl shadow-md backdrop-blur-sm transition-colors duration-150 cursor-pointer"
           >
-            <Sidebar className="w-4 h-4" />
+            <Sidebar className="w-4 h-4" aria-hidden="true" />
           </button>
 
           {/* Preview Canvas Workspace */}
@@ -346,7 +344,7 @@ export default function PresentationWorkspace({
                   top: '50%',
                   position: 'absolute',
                 }}
-                className={`slide-canvas flex items-center justify-center shrink-0 rounded-2xl border border-slate-200/60 shadow-2xl ${selectedTheme.className}`}
+                className={`slide-canvas flex items-center justify-center shrink-0 rounded-2xl border border-border shadow-2xl ${selectedTheme.className}`}
               >
                 {selectedTheme.id === 'cyberpunk' && (
                   <div className="absolute inset-0 cyberpunk-grid pointer-events-none opacity-40" />
@@ -356,35 +354,56 @@ export default function PresentationWorkspace({
                 </div>
               </div>
             ) : (
-              <div className="text-zinc-500 text-sm flex items-center justify-center h-full">
-                No slides to display. Add markdown files inside your local **slides/** folder.
+              <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-surface border border-border mb-4">
+                  <FileQuestionMark className="w-6 h-6 text-foreground-subtle" aria-hidden="true" />
+                </div>
+                <h2 className="text-base font-semibold text-foreground">No slides yet</h2>
+                <p className="text-sm text-foreground-muted mt-1.5 max-w-sm leading-relaxed">
+                  Drop a markdown file into the{' '}
+                  <code className="font-mono text-xs bg-surface border border-border rounded px-1.5 py-0.5 text-primary">
+                    slides/
+                  </code>{' '}
+                  folder and it appears here automatically.
+                </p>
               </div>
             )}
           </div>
 
           {/* Preview Navigation timeline controls */}
-          <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
+          <div className="px-6 py-3 bg-surface border-t border-border flex items-center justify-between shrink-0">
 
             <button
               onClick={prevSlide}
               disabled={currentSlideIndex === 0}
-              className="p-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-700 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer"
+              aria-label="Previous slide"
+              className="flex items-center justify-center w-11 h-11 bg-surface hover:bg-surface-muted border border-border rounded-xl text-foreground-muted disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface transition-colors duration-150 cursor-pointer"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
             </button>
 
-            <div className="flex flex-col items-center gap-1.5">
-              <span className="text-sm font-bold tracking-wider font-mono text-slate-800">
-                Slide {currentSlideIndex + 1} / {slides.length}
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-xs font-semibold font-mono text-foreground-muted tabular">
+                {currentSlideIndex + 1} / {slides.length}
               </span>
-              <div className="flex gap-1">
-                {slides.map((_, idx) => (
+              {/* Each dot keeps a 44px hit area; only the bar inside is 6px tall. */}
+              <div className="flex items-center">
+                {slides.map((slide, idx) => (
                   <button
-                    key={idx}
+                    key={slide.id}
                     onClick={() => setCurrentSlideIndex(idx)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'w-6 bg-purple-600' : 'w-1.5 bg-slate-200 hover:bg-slate-400'
+                    aria-label={`Go to slide ${idx + 1}`}
+                    aria-current={currentSlideIndex === idx ? 'true' : undefined}
+                    className="group flex items-center justify-center h-11 px-1 cursor-pointer"
+                  >
+                    <span
+                      className={`h-1.5 rounded-full transition-all duration-200 ${
+                        currentSlideIndex === idx
+                          ? 'w-6 bg-primary'
+                          : 'w-1.5 bg-border-strong group-hover:bg-foreground-subtle'
                       }`}
-                  />
+                    />
+                  </button>
                 ))}
               </div>
             </div>
@@ -392,9 +411,10 @@ export default function PresentationWorkspace({
             <button
               onClick={nextSlide}
               disabled={currentSlideIndex === slides.length - 1}
-              className="p-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-700 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer"
+              aria-label="Next slide"
+              className="flex items-center justify-center w-11 h-11 bg-surface hover:bg-surface-muted border border-border rounded-xl text-foreground-muted disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface transition-colors duration-150 cursor-pointer"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             </button>
 
           </div>
@@ -430,31 +450,34 @@ export default function PresentationWorkspace({
             </div>
           </div>
 
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl z-20 opacity-0 hover:opacity-100 transition-opacity duration-300 shadow-2xl">
+          {/* Controls fade in on hover, but focus-within keeps them reachable by keyboard. */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl z-20 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200 shadow-2xl">
             <button
               onClick={prevSlide}
               disabled={currentSlideIndex === 0}
-              className="p-2 hover:bg-white/10 text-white rounded-lg disabled:opacity-40"
+              aria-label="Previous slide"
+              className="flex items-center justify-center w-11 h-11 hover:bg-white/10 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150 cursor-pointer"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
             </button>
-            <span className="text-sm font-semibold font-mono text-zinc-200">
+            <span className="text-sm font-semibold font-mono text-white tabular">
               {currentSlideIndex + 1} / {slides.length}
             </span>
             <button
               onClick={nextSlide}
               disabled={currentSlideIndex === slides.length - 1}
-              className="p-2 hover:bg-white/10 text-white rounded-lg disabled:opacity-40"
+              aria-label="Next slide"
+              className="flex items-center justify-center w-11 h-11 hover:bg-white/10 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150 cursor-pointer"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             </button>
-            <div className="w-[1px] h-4 bg-white/20 mx-1" />
+            <div className="w-px h-5 bg-white/20" />
             <button
               onClick={() => setIsFullscreen(false)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded-lg text-xs font-semibold transition"
+              className="flex items-center gap-1.5 h-11 px-3 hover:bg-white/10 text-white rounded-lg text-xs font-semibold transition-colors duration-150 cursor-pointer"
             >
-              <Minimize2 className="w-4 h-4" />
-              <span>Exit Play</span>
+              <Minimize2 className="w-4 h-4" aria-hidden="true" />
+              <span>Exit (Esc)</span>
             </button>
           </div>
 

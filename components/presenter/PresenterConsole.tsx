@@ -6,18 +6,15 @@ import {
   ChevronRight,
   Clock,
   RotateCcw,
-  Tv
+  Tv,
+  ImageOff,
+  Pause,
+  Play
 } from 'lucide-react';
 import { parseMarkdownToSlides } from '../../app/utils/parser';
-import { Slide, ThemeId, Theme, SyncMessage } from '../../app/types';
+import { Slide, ThemeId, SyncMessage } from '../../app/types';
+import { getTheme } from '../../app/utils/themes';
 import { parseInlineMarkdown } from './SlideRenderer';
-
-const THEMES: Theme[] = [
-  { id: 'glass', name: '🔮 Dark Glassmorphism', className: 'theme-glass' },
-  { id: 'editorial', name: '🎨 Editorial Light', className: 'theme-editorial' },
-  { id: 'cyberpunk', name: '⚡ Cyberpunk Accent', className: 'theme-cyberpunk' },
-  { id: 'monotone', name: '🔳 Minimalist Monotone', className: 'theme-monotone' },
-];
 
 export default function PresenterConsole() {
   // --- States ---
@@ -176,8 +173,12 @@ export default function PresenterConsole() {
           );
         case 'image':
           return (
-            <div key={i} className="bg-slate-100 border border-slate-205 rounded-lg p-2 text-center text-[10px] text-slate-500">
-              🖼️ Image: {el.alt || 'No details'}
+            <div
+              key={i}
+              className="flex items-center gap-2 bg-black/5 border border-current/10 rounded-lg px-3 py-2 text-[10px] opacity-70"
+            >
+              <ImageOff className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{el.alt || 'Image'}</span>
             </div>
           );
         case 'blockquote':
@@ -193,43 +194,56 @@ export default function PresenterConsole() {
     });
   };
 
-  const selectedTheme = THEMES.find((t) => t.id === themeId) || THEMES[0];
+  const selectedTheme = getTheme(themeId);
 
   return (
-    <div className="flex flex-col h-screen bg-[#f8fafc] text-slate-800 font-sans overflow-hidden">
-      
+    <div className="flex flex-col h-screen bg-background text-foreground font-sans overflow-hidden">
+
       {/* Top Banner Dashboard */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 z-10 shrink-0">
+      <header className="flex items-center justify-between gap-4 px-6 py-3 bg-surface border-b border-border z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+          <span
+            className={`w-2.5 h-2.5 rounded-full shrink-0 ${isConnected ? 'bg-accent animate-pulse' : 'bg-destructive'}`}
+            aria-hidden="true"
+          />
           <div>
-            <h1 className="text-sm font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              Presenter Console
-              <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v1.0</span>
+            <h1 className="text-sm font-bold tracking-tight text-foreground">
+              Presenter console
             </h1>
-            <p className="text-[10px] text-slate-500 font-medium">
-              {isConnected ? 'Connected to presentation page' : 'Waiting for connection...'}
+            {/* Connection state is announced, not just colour-coded */}
+            <p
+              className={`text-xs font-medium ${isConnected ? 'text-accent' : 'text-destructive'}`}
+              role="status"
+            >
+              {isConnected ? 'Connected' : 'Waiting for presentation…'}
             </p>
           </div>
         </div>
 
         {/* Dynamic Slide Counter */}
-        <div className="text-sm font-bold tracking-wider font-mono bg-slate-100 border border-slate-200 px-3.5 py-1.5 rounded-xl text-slate-700 shadow-sm">
-          Slide {currentSlideIndex + 1} of {slides.length || 1}
+        <div className="text-sm font-semibold font-mono bg-surface-muted border border-border px-3.5 py-2 rounded-xl text-foreground-muted tabular">
+          {currentSlideIndex + 1} / {slides.length || 1}
         </div>
 
         {/* Running Timer */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold font-mono text-emerald-700 shadow-sm">
-            <Clock className="w-4 h-4 opacity-75 text-emerald-600" />
-            <span>{formatTime(timeElapsed)}</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 h-11 px-3.5 bg-surface-muted border border-border rounded-xl text-sm font-semibold font-mono text-foreground tabular">
+            <Clock className="w-4 h-4 text-foreground-subtle" aria-hidden="true" />
+            <span aria-label={`Elapsed time ${formatTime(timeElapsed)}`}>{formatTime(timeElapsed)}</span>
           </div>
           <button
-            onClick={() => setTimeElapsed(0)}
-            className="p-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-500 hover:text-slate-900 transition cursor-pointer"
-            title="Reset Timer"
+            onClick={() => setIsTimerRunning((r) => !r)}
+            aria-label={isTimerRunning ? 'Pause timer' : 'Resume timer'}
+            className="flex items-center justify-center w-11 h-11 bg-surface hover:bg-surface-muted border border-border rounded-xl text-foreground-subtle hover:text-foreground transition-colors duration-150 cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
+            {isTimerRunning ? <Pause className="w-4 h-4" aria-hidden="true" /> : <Play className="w-4 h-4" aria-hidden="true" />}
+          </button>
+          <button
+            onClick={() => setTimeElapsed(0)}
+            aria-label="Reset timer"
+            className="flex items-center justify-center w-11 h-11 bg-surface hover:bg-surface-muted border border-border rounded-xl text-foreground-subtle hover:text-foreground transition-colors duration-150 cursor-pointer"
+          >
+            <RotateCcw className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
@@ -242,13 +256,13 @@ export default function PresenterConsole() {
         <section className="col-span-8 flex flex-col gap-6 overflow-hidden min-h-0">
           
           {/* Active Preview */}
-          <div className="flex-1 flex flex-col bg-white border border-slate-200/80 rounded-2xl p-4 overflow-hidden min-h-0 relative shadow-sm">
-            <span className="text-xs font-bold tracking-wider uppercase text-purple-650 flex items-center gap-2 mb-2 shrink-0">
-              <Tv className="w-3.5 h-3.5 text-purple-600" />
-              <span>Current Slide Screen</span>
+          <div className="flex-1 flex flex-col bg-surface border border-border rounded-2xl p-4 overflow-hidden min-h-0 relative shadow-sm">
+            <span className="text-xs font-bold tracking-wider uppercase text-primary flex items-center gap-2 mb-2 shrink-0">
+              <Tv className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Current slide</span>
             </span>
             
-            <div className="flex-1 relative bg-slate-50 border border-slate-150 rounded-xl overflow-hidden">
+            <div className="flex-1 relative bg-surface-muted border border-border rounded-xl overflow-hidden">
               {activeSlide ? (
                 <div
                   style={{
@@ -276,12 +290,12 @@ export default function PresenterConsole() {
           </div>
 
           {/* Up Next Preview */}
-          <div className="h-56 flex flex-col bg-white border border-slate-200/80 rounded-2xl p-4 overflow-hidden shrink-0 relative shadow-sm">
-            <span className="text-xs font-bold tracking-wider uppercase text-slate-500 flex items-center gap-2 mb-2">
-              <span>Up Next</span>
+          <div className="h-56 flex flex-col bg-surface border border-border rounded-2xl p-4 overflow-hidden shrink-0 relative shadow-sm">
+            <span className="text-xs font-bold tracking-wider uppercase text-foreground-subtle flex items-center gap-2 mb-2">
+              <span>Up next</span>
             </span>
             
-            <div className="flex-1 relative bg-slate-50 border border-slate-150 rounded-xl overflow-hidden">
+            <div className="flex-1 relative bg-surface-muted border border-border rounded-xl overflow-hidden">
               {nextSlide ? (
                 <div
                   style={{
@@ -291,7 +305,7 @@ export default function PresenterConsole() {
                     left: '50%',
                     top: '50%',
                   }}
-                  className={`absolute shrink-0 border border-slate-200/65 opacity-75 rounded-2xl ${selectedTheme.className}`}
+                  className={`absolute shrink-0 border border-border opacity-75 rounded-2xl ${selectedTheme.className}`}
                 >
                   {selectedTheme.id === 'cyberpunk' && (
                     <div className="absolute inset-0 cyberpunk-grid pointer-events-none opacity-40" />
@@ -301,8 +315,8 @@ export default function PresenterConsole() {
                   </div>
                 </div>
               ) : (
-                <div className="text-slate-400 text-xs flex items-center justify-center h-full select-none">
-                  End of Presentation
+                <div className="text-foreground-subtle text-xs flex items-center justify-center h-full select-none">
+                  End of presentation
                 </div>
               )}
             </div>
@@ -312,39 +326,40 @@ export default function PresenterConsole() {
 
         {/* RIGHT COLUMN (Presenter Notes & Controls) */}
         <section className="col-span-4 flex flex-col gap-6 overflow-hidden min-h-0">
-          
+
           {/* Notes Container */}
-          <div className="flex-1 flex flex-col bg-white border border-slate-200/80 rounded-2xl p-5 overflow-hidden min-h-0 shadow-sm">
-            <span className="text-xs font-bold tracking-wider uppercase text-slate-500 flex items-center gap-2 mb-3 shrink-0">
-              <span>Speaker Notes</span>
+          <div className="flex-1 flex flex-col bg-surface border border-border rounded-2xl p-5 overflow-hidden min-h-0 shadow-sm">
+            <span className="text-xs font-bold tracking-wider uppercase text-foreground-subtle flex items-center gap-2 mb-3 shrink-0">
+              <span>Speaker notes</span>
             </span>
-            <div className="flex-1 bg-slate-50 border border-slate-200/80 rounded-xl p-5 overflow-y-auto font-sans leading-relaxed text-sm select-text text-slate-700">
+            {/* Notes are the one thing the presenter reads at a glance — give them real size. */}
+            <div className="flex-1 bg-surface-muted border border-border rounded-xl p-5 overflow-y-auto leading-relaxed text-base select-text text-foreground">
               {activeSlide?.notes ? (
                 <p className="whitespace-pre-line">{activeSlide.notes}</p>
               ) : (
-                <span className="italic text-slate-400 text-xs">No speaker notes provided for this slide.</span>
+                <span className="italic text-foreground-subtle text-sm">No notes for this slide.</span>
               )}
             </div>
           </div>
 
           {/* Quick Click navigation bar */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shrink-0 flex items-center justify-between shadow-sm">
+          <div className="bg-surface border border-border rounded-2xl p-4 shrink-0 flex items-center justify-between gap-3 shadow-sm">
             <button
               onClick={prevSlide}
               disabled={currentSlideIndex === 0}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold tracking-wide transition cursor-pointer flex items-center gap-1"
+              className="flex items-center justify-center gap-1 h-12 px-5 bg-surface-muted hover:bg-border border border-border disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-muted text-foreground-muted rounded-xl text-sm font-semibold transition-colors duration-150 cursor-pointer"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
               <span>Back</span>
             </button>
 
             <button
               onClick={nextSlideAction}
               disabled={currentSlideIndex === slides.length - 1}
-              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:hover:bg-purple-600 text-white rounded-xl text-xs font-bold tracking-wide transition cursor-pointer flex items-center gap-1 shadow-lg shadow-purple-600/15"
+              className="flex-1 flex items-center justify-center gap-1 h-12 px-6 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary text-on-primary rounded-xl text-sm font-semibold transition-colors duration-150 cursor-pointer shadow-lg shadow-primary/20"
             >
               <span>Next</span>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
@@ -355,4 +370,3 @@ export default function PresenterConsole() {
     </div>
   );
 }
-export { THEMES };

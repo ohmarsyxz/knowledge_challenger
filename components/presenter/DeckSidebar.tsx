@@ -10,48 +10,69 @@ interface DeckSidebarProps {
   setCurrentSlideIndex: (idx: number) => void;
 }
 
-export default function DeckSidebar({ slides, currentSlideIndex, setCurrentSlideIndex }: DeckSidebarProps) {
+export default function DeckSidebar({
+  slides,
+  currentSlideIndex,
+  setCurrentSlideIndex
+}: Readonly<DeckSidebarProps>) {
   return (
-    <section className="w-80 flex flex-col border-r border-slate-200 bg-white overflow-hidden shrink-0 min-h-0">
-      <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
-        <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase flex items-center gap-2">
-          <FolderOpen className="w-4 h-4 text-purple-600" />
-          <span>Slides Deck</span>
+    <nav
+      aria-label="Slide deck"
+      className="w-80 flex flex-col border-r border-border bg-surface overflow-hidden shrink-0 min-h-0"
+    >
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
+        <span className="text-xs font-semibold tracking-wider text-foreground-subtle uppercase flex items-center gap-2">
+          <FolderOpen className="w-4 h-4 text-primary" aria-hidden="true" />
+          <span>Slides</span>
         </span>
-        <span className="text-xs font-semibold font-mono text-slate-400">
-          {slides.length} Items
+        <span className="text-xs font-semibold font-mono text-foreground-subtle tabular">
+          {slides.length}
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <ol className="flex-1 overflow-y-auto p-3 space-y-2">
         {slides.map((slide, idx) => {
-          const mainHeading = slide.elements.find(el => el.type.startsWith('h'))?.content || `Slide ${slide.id}`;
+          const mainHeading =
+            slide.elements.find((el) => el.type.startsWith('h'))?.content ||
+            `Slide ${slide.id}`;
           const isActive = currentSlideIndex === idx;
           return (
-            <button
-              key={slide.id}
-              onClick={() => setCurrentSlideIndex(idx)}
-              className={`w-full text-left p-4 rounded-xl border transition-all relative overflow-hidden flex items-start gap-3 group cursor-pointer ${isActive
-                  ? 'bg-purple-50 border-purple-400 shadow-sm shadow-purple-100'
-                  : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100 hover:border-slate-350'
+            <li key={slide.id}>
+              <button
+                onClick={() => setCurrentSlideIndex(idx)}
+                aria-current={isActive ? 'true' : undefined}
+                className={`w-full text-left p-3.5 rounded-xl border transition-colors duration-150 flex items-start gap-3 group cursor-pointer ${
+                  isActive
+                    ? 'bg-primary-soft border-primary'
+                    : 'bg-surface border-border hover:bg-surface-muted hover:border-border-strong'
                 }`}
-            >
-              <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-md shrink-0 ${isActive ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-500'
-                }`}>
-                {slide.id}
-              </span>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-slate-800 truncate group-hover:text-purple-600 transition-colors">
-                  {mainHeading}
-                </h4>
-                <span className="text-[10px] text-slate-450 uppercase tracking-wider font-semibold font-mono mt-1 block">
-                  Layout: {slide.layout}
+              >
+                <span
+                  className={`text-xs font-bold font-mono px-2 py-0.5 rounded-md shrink-0 tabular ${
+                    isActive
+                      ? 'bg-primary text-on-primary'
+                      : 'bg-surface-muted text-foreground-subtle'
+                  }`}
+                >
+                  {slide.id}
                 </span>
-              </div>
-            </button>
+                <span className="flex-1 min-w-0">
+                  <span
+                    className={`block text-sm font-semibold truncate transition-colors ${
+                      isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'
+                    }`}
+                  >
+                    {mainHeading}
+                  </span>
+                  <span className="text-[10px] text-foreground-subtle uppercase tracking-wider font-semibold font-mono mt-1 block">
+                    {slide.layout}
+                  </span>
+                </span>
+              </button>
+            </li>
           );
         })}
-      </div>
-    </section>
+      </ol>
+    </nav>
   );
 }

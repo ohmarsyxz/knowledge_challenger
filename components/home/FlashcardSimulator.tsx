@@ -42,50 +42,67 @@ export default function FlashcardSimulator() {
 
   return (
     <div className="mt-8 flex flex-col items-center w-full">
-      <div 
+      {/* A real <button> so the card flips with Enter/Space, not just a mouse. */}
+      <button
+        type="button"
         onClick={() => setIsFlipped(!isFlipped)}
-        className="w-full h-44 cursor-pointer relative perspective"
+        aria-pressed={isFlipped}
+        aria-label={
+          isFlipped
+            ? 'Showing answer. Activate to show the question again.'
+            : 'Showing question. Activate to reveal the answer.'
+        }
+        className="w-full h-44 cursor-pointer relative perspective text-left"
       >
-        <div className={`w-full h-full duration-500 preserve-3d absolute rounded-2xl border shadow-lg flex items-center justify-center p-6 text-center select-none ${isFlipped
-            ? 'rotate-y-180 bg-gradient-to-tr from-purple-50 to-violet-50 border-purple-200 text-purple-950 shadow-purple-100/50'
-            : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:shadow-xl shadow-slate-100/70'
-          }`}>
+        <div
+          className={`w-full h-full duration-300 preserve-3d absolute rounded-2xl border shadow-lg flex items-center justify-center p-6 text-center ${
+            isFlipped
+              ? 'rotate-y-180 bg-primary-soft border-primary-border'
+              : 'bg-surface border-border hover:border-border-strong hover:shadow-xl'
+          }`}
+        >
           {/* Front Side */}
-          <div className={`absolute flex flex-col items-center justify-center p-4 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 mb-3">
+          <div
+            className={`absolute flex flex-col items-center justify-center p-4 backface-hidden transition-opacity duration-150 ${
+              isFlipped ? 'opacity-0' : 'opacity-100'
+            }`}
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary-soft px-2.5 py-1 rounded-full border border-primary-border mb-3">
               {activeCard.category}
             </span>
-            <p className="text-sm font-bold text-slate-850 px-4 leading-relaxed">
+            <p className="text-sm font-semibold text-foreground px-4 leading-relaxed">
               {activeCard.question}
             </p>
-            <span className="text-[10px] text-slate-400 mt-4 flex items-center gap-1">
-              <RotateCw className="w-3.5 h-3.5 text-slate-400" />
-              <span>Click card to reveal answer</span>
+            <span className="text-[10px] text-foreground-subtle mt-4 flex items-center gap-1">
+              <RotateCw className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Reveal answer</span>
             </span>
           </div>
 
           {/* Back Side */}
-          <div className={`absolute flex flex-col items-center justify-center p-4 rotate-y-180 backface-hidden ${isFlipped ? 'opacity-100' : 'opacity-0'}`}>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-purple-700 bg-purple-100 px-2.5 py-1 rounded-full border border-purple-200 mb-3">
-              Recall Explanation
+          <div
+            className={`absolute flex flex-col items-center justify-center p-4 rotate-y-180 backface-hidden transition-opacity duration-150 ${
+              isFlipped ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-surface px-2.5 py-1 rounded-full border border-primary-border mb-3">
+              Answer
             </span>
-            <p className="text-xs text-slate-700 font-medium px-4 leading-relaxed">
+            <p className="text-xs text-foreground-muted font-medium px-4 leading-relaxed">
               {activeCard.answer}
             </p>
           </div>
         </div>
-      </div>
+      </button>
 
       {/* Deck Navigation */}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleNextCard();
-        }}
-        className="mt-4 flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+        type="button"
+        onClick={handleNextCard}
+        className="mt-3 flex items-center gap-1 h-11 px-3 text-xs font-semibold text-foreground-subtle hover:text-primary transition-colors duration-150 cursor-pointer"
       >
-        <span>Skip to Next Card</span>
-        <ChevronRight className="w-4 h-4" />
+        <span>Next card</span>
+        <ChevronRight className="w-4 h-4" aria-hidden="true" />
       </button>
     </div>
   );
